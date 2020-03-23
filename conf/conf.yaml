@@ -1,0 +1,9 @@
+version: 1.0.0
+name: connector
+server:
+  http_port: 8282
+log:
+  dirpath: /project/connector/logs/
+  level: debug # debug info error silent
+db:
+  name: leveldb # db name
