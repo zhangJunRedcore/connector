@@ -7,3 +7,5 @@ log:
   level: debug # debug info error silent
 db:
   name: leveldb # db name
+path:
+  jsonpath: /project/openresty/nginx/conf/
