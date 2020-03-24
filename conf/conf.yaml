@@ -7,3 +7,8 @@ log:
   level: debug # debug info error silent
 db:
   name: leveldb # db name
+path:
+  jsonpath: /project/openresty/nginx/conf/
+  # ngx_shared_url: http://127.0.0.1:3000/clouddeep/shared/set
+  manager_addr: http://127.0.0.1:3000
+  connector_server: 127.0.0.1:8080

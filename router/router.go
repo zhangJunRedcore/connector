@@ -1,7 +1,7 @@
 package router
 
 import (
-	"deepctl/controller"
+	"connector/controller"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,7 +10,7 @@ func InitRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-
-	r.POST("/deepctl/create", controller.CreatePod)
+	//Get gatewaymassage from manager and generate gateway.json at the same time
+	r.POST("/gateway/data", controller.GenerateGatewayJSON)
 	return r
 }

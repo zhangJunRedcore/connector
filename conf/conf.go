@@ -24,6 +24,9 @@ var AccessDstPort string
 var Type string
 var IsPolicyVerified string
 var IPMask string
+var GatewayCompanyConfigDir string
+var ManagerAddr string
+var ConnectorServer string
 
 // Config struct
 type Config struct {
@@ -66,6 +69,9 @@ func (c *Config) initConfig() error {
 	}
 	AccessIsVerify = viper.GetString("access.isVerify")
 	AccessDstPort = viper.GetString("access.dstport")
+	GatewayCompanyConfigDir = viper.GetString("path.jsonpath")
+	ManagerAddr = viper.GetString("path.manageraddr")
+	ConnectorServer = viper.GetString("path.connectorServer")
 	Type = viper.GetString("type")
 	IsPolicyVerified = viper.GetString("server.is_policy_verified")
 	IPMask = viper.GetString("server.ip_mask")
@@ -81,6 +87,9 @@ func watchConfig() {
 		fmt.Printf("Config file changed: %s\n", e.Name)
 		AccessIsVerify = viper.GetString("access.isVerify")
 		AccessDstPort = viper.GetString("access.dstport")
+		GatewayCompanyConfigDir = viper.GetString("path.jsonpath")
+		ManagerAddr = viper.GetString("path.manageraddr")
+		ConnectorServer = viper.GetString("path.connectorServer")
 		Type = viper.GetString("type")
 		IsPolicyVerified = viper.GetString("server.is_policy_verified")
 		lib.ModifyLevel()
