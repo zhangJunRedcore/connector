@@ -3,21 +3,35 @@ package controller
 import (
 	"bytes"
 	"connector/conf"
+	"connector/lib"
 	"encoding/gob"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"regexp"
 
 	"github.com/gin-gonic/gin"
 )
 
 var gatewayJSON []byte
+var infoLog lib.InfoLogger
+var debugLog lib.DebugLogger
+var errorLog lib.ErrorLogger
+
+type Data struct {
+	ports       Ports
+	manager     string `json:"manager"`
+	hostAddress string `json:"hostAddress"`
+}
+
+type Ports struct {
+	HTTP  int `json:"http"`
+	HTTPS int `json:"https"`
+}
 
 type GatewayJSON struct {
 	Body      io.Reader
-	CompanyId string `json:"companyId"`
+	CompanyID string `json:"CompanyID"`
+	ErrorCode string `json:"errCode"`
 }
 
 //GenerateGatewayJSON work for xx.json
@@ -29,71 +43,46 @@ func GenerateGatewayJSON(c *gin.Context) {
 			"msg": "INVALID_PARAMS",
 		})
 	}
-	jsonBody, _ := GetBytes(body)
+	jsonBody, _ := getBytes(body)
 
-	log.Println("GenerateGatewayJSON body is:", body)
-	log.Println(`jsonBody is :`, jsonBody)
-	log.Println(`companyID is: `, body.CompanyId)
+	debugLog.Println("GenerateGatewayJSON body is:", body)
+	debugLog.Println(`byteBody is :`, jsonBody)
+	debugLog.Println(`CompanyID is: `, body.CompanyID)
 
-	writeGatewayData(jsonBody, body.CompanyId)
-	version := getGatewayVersion()
+	// writeGatewayData(jsonBody, body.CompanyID)
 
-	c.JSON(http.StatusOK, gin.H{
-		"version": version,
-	})
-}
-
-//generateGatewayData write json in file
-func writeGatewayData(jsonBody []byte, companyID string) {
-	file := conf.GatewayCompanyConfigDir + companyID + `_gateway.json`
+	file := conf.GatewayCompanyConfigDir + body.CompanyID + `_gateway.json`
+	debugLog.Println(`[gateway] write gateway file:`, file)
 
 	err := ioutil.WriteFile(file, jsonBody, 0777)
 	if err != nil {
-		log.Println(`写入文件失败:`, err)
+		errorLog.Println(`写入文件失败:`, err)
 	}
-}
 
-//generateGatewayData get gateway version
-func getGatewayVersion() string {
-	return "x.x.x"
-}
-
-func GetGatewayJSON(c *gin.Context) {
-	companyID := c.Param("companyId")
-	files := readFileByPath(conf.GatewayCompanyConfigDir)
-
-	for _, file := range files {
-		log.Println("[file]", file, companyID)
-		result, _ := regexp.Match(companyID, []byte(string(file)))
-		if result == true {
-			gatewayJSONFilePath := conf.GatewayCompanyConfigDir + string(file)
-			gatewayJSON = readFileByPath(gatewayJSONFilePath)
-			log.Println(`[gateway]`, gatewayJSON)
-			break
-		}
-	}
-	if gatewayJSON == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"massage": "gateway json not found",
-		})
-	}
-	url := `http://127.0.0.1/clouddeep/shared/get/` + companyID
-	gatewayShared, _ := c.Get(url)
 	c.JSON(http.StatusOK, gin.H{
-		"gatewayFile":   gatewayJSON,
-		"gatewayShared": gatewayShared,
+		"msg": "",
 	})
 }
 
-func readFileByPath(path string) []byte {
-	content, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Println("读取文件失败:%s", err)
+func InitGateway(c *gin.Context) {
+	managerAddr := conf.ManagerAddr
+	connectorServer := conf.ConnectorServer
+	url := managerAddr + `/manager/api/gateway?host=` + connectorServer
+	debugLog.Println("GET manager url is:", url)
+
+	response, err := http.Get(url)
+	if err != nil || response.StatusCode != http.StatusOK {
+		c.Status(http.StatusServiceUnavailable)
+		return
 	}
-	return content
+
+	reader := response.Body
+	debugLog.Println("response get body is:", reader)
+	// gatewayGroup := groupEleFromGatewayFiles(reader)
+	// modifyBgxConf(gatewayGroup.ports)
 }
 
-func GetBytes(key interface{}) ([]byte, error) {
+func getBytes(key interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(key)
@@ -102,3 +91,49 @@ func GetBytes(key interface{}) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
+
+/*
+func GenerateGatewayData(data []byte, CompanyID string) interface{} {
+
+	file := conf.GatewayCompanyConfigDir + CompanyID + `_gateway.json`
+	debugLog.Println(`[gateway] write gateway file:`, file)
+
+	err := ioutil.WriteFile(file, data, 0777)
+	if err != nil {
+		errorLog.Println(`写入文件失败:`, err)
+	}
+
+	url := conf.NgxSharedSetUrl + "/" + CompanyID
+	response, err := http.Get(url)
+	if err != nil || response.StatusCode != http.StatusOK {
+		errorLog.Println("get url result err !")
+		return nil
+	}
+	return response.Body
+}
+
+// 从不同 gateway 中提取信息，并归类
+func groupEleFromGatewayFiles(gateways io.ReadCloser) *Data {
+
+	data := &Data{}
+	data.ports.HTTP = 80
+	data.ports.HTTPS = 443
+
+	for _, gateway := range gateways {
+		gatewayJSONFilePath := conf.GatewayCompanyConfigDir + `conf_gateway` + gateway.CompanyID + `_gateway.json`
+		err := ioutil.WriteFile(gatewayJSONFilePath, gateway, 0777)
+		if err != nil {
+			errorLog.Println(`写入文件失败:`, err)
+		}
+		praseAddressPorts(gateway, data)
+	}
+	return data
+}
+
+func praseAddressPorts(i interface{}, data *Data) {
+	jsondata, _ := json.Marshal(data)
+	debugLog.Println("port json data is :", jsondata)
+	// data.manager& data.hostAddress  合并数组  for range
+	json.
+}
+*/
