@@ -1,0 +1,14 @@
+version: 1.0.0
+name: connector
+server:
+  http_port: 8282
+  company_id: 
+log:
+  dirpath: /project/connector/logs/
+  level: debug # debug info error silent
+db:
+  name: leveldb # db name
+path:
+  jsonpath: /project/openresty/nginx/conf/
+  ngx_shared_url: http://127.0.0.1:3000/clouddeep/shared/set
+  manager_addr: http://127.0.0.1:3000
