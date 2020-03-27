@@ -19,7 +19,9 @@ func InitGateway() {
 	debugLog.Println("GET manager url is:", url)
 
 	response, err := http.Get(url)
+	debugLog.Println("/manager/api/gateway response", response)
 	if err != nil || response.StatusCode != http.StatusOK {
+		errorLog.Println("get /manager/api/gateway result err !", err)
 		return
 	}
 
@@ -40,9 +42,11 @@ func GenerateGatewayData(data []byte, CompanyID string) {
 
 	url := conf.NgxSharedSetUrl + "/" + CompanyID
 	response, err := http.Get(url)
+	debugLog.Println("clouddeep/shared/set response", response)
 	if err != nil || response.StatusCode != http.StatusOK {
-		errorLog.Println("get url result err !")
+		errorLog.Println("get clouddeep/shared/set result err !", err)
 	}
+
 }
 
 // 从不同 gateway 中提取信息，并归类
