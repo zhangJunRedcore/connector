@@ -4,15 +4,15 @@ import (
 	"connector/conf"
 	"connector/lib"
 	"connector/router"
-	"connector/service"
+	"connector/services"
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
 )
 
-var configPath = flag.String("config_path", "/project/connector/conf/conf.yaml", "config file path")
+// var configPath = flag.String("config_path", "/project/connector/conf/conf.yaml", "config file path")
+var configPath = flag.String("config_path", "./conf/conf.yaml", "config file path")
 
 func init() {
 	log.Println("config_path:", *configPath)
@@ -39,19 +39,17 @@ func main() {
 		return lib.LogLevelInfo
 	}()
 
-	var interfaceName string = "interfaceName"
-
 	logger := lib.NewLogger(
 		logLevel,
-		fmt.Sprintf("(%s) ", interfaceName),
 	)
 	logger.Info.Println("Starting Logger")
 	logger.Debug.Println("Debug log enabled")
 
-	service.InitGateway()
+	services.InitGateway()
 
 	r := router.InitRouter()
+	host := ":" + viper.GetString("server.http_port")
+	logger.Info.Println(host)
 
-	r.Run(":8888")
-
+	r.Run(host)
 }

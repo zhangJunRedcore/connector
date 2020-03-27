@@ -2,55 +2,62 @@ package controller
 
 import (
 	"connector/lib"
-	"connector/service"
-	"connector/tools"
-
-	"io"
+	"connector/services"
+	"connector/utils"
+	"connector/conf"
 	"net/http"
 
+	"github.com/spf13/viper"
 	"github.com/gin-gonic/gin"
 )
 
-var gatewayJSON []byte
 var infoLog lib.InfoLogger
 var debugLog lib.DebugLogger
 var errorLog lib.ErrorLogger
 
-type Data struct {
-	Ports       Ports
-	Manager     string `json:"manager"`
-	HostAddress string `json:"hostAddress"`
-}
-
-type Ports struct {
-	HTTP  int `json:"http"`
-	HTTPS int `json:"https"`
-}
-
-type GatewayJSON struct {
-	Body      io.Reader
-	CompanyID string `json:"companyID"`
-	ErrorCode string `json:"errCode"`
-}
-
 //GenerateGatewayJSON work for xx.json
-func GenerateGatewayJSON(c *gin.Context) {
-
-	var body GatewayJSON
-	if c.BindJSON(&body) != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
+func GenerateGatewayJSON(ctx *gin.Context) {
+	app := services.Gin{Ctx: ctx}
+	var body services.GatewayData
+	if ctx.BindJSON(&body) != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"msg": "INVALID_PARAMS",
 		})
 	}
-	jsonBody, _ := tools.GetBytes(body)
-
 	debugLog.Println("GenerateGatewayJSON body is:", body)
-	debugLog.Println(`byteBody is :`, jsonBody)
-	debugLog.Println(`CompanyID is: `, body.CompanyID)
 
-	service.GenerateGatewayData(jsonBody, body.CompanyID)
+	dataString, err := utils.Map2String(body.Data)
+	if err != nil {	
+		errorLog.Println(err)
+		app.Response(200, err.Error(),nil)
+		return 
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "",
+	err = utils.WriteFile(body.CompanyId , []byte(dataString))
+	if err != nil {
+		errorLog.Println(err)
+		app.Response(200, err.Error(),nil)
+		return
+	}
+
+	confPath := viper.ConfigFileUsed()
+	yaml := &utils.Yaml{YamlPath: confPath}
+	err = yaml.Modify("company_id", body.CompanyId)
+	if err != nil {
+		errorLog.Println("get clouddeep/shared/set result err !", err)
+		app.Response(200, err.Error(),nil)
+		return
+	}
+
+	url := conf.NgxSharedSetUrl + "/" + body.CompanyId
+	response, err := services.Get(url)
+	if err != nil || response.StatusCode != http.StatusOK {
+		errorLog.Println("get clouddeep/shared/set result err !", err)
+		app.Response(200, err.Error(),nil)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "ok",
 	})
 }

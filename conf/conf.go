@@ -1,12 +1,7 @@
-// @Title conf
-// @Description conf
-// @Author jun.zhang@clouddeep.cn
-// @Update 2019.11.27
 package conf
 
 import (
 	"connector/lib"
-	"fmt"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -59,8 +54,7 @@ func (c *Config) initConfig() error {
 		return err
 	}
 	GatewayCompanyConfigDir = viper.GetString("path.jsonpath")
-	ManagerAddr = viper.GetString("path.manageraddr")
-	ConnectorServer = viper.GetString("path.connectorServer")
+	ManagerAddr = viper.GetString("path.manager_addr")
 	NgxSharedSetUrl = viper.GetString("path.ngx_shared_url")
 	watchConfig()
 	return nil
@@ -71,10 +65,9 @@ func (c *Config) initConfig() error {
 func watchConfig() {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Printf("Config file changed: %s\n", e.Name)
+		infoLog.Printf("Config file changed: %s\n", e.Name)
 		GatewayCompanyConfigDir = viper.GetString("path.jsonpath")
-		ManagerAddr = viper.GetString("path.manageraddr")
-		ConnectorServer = viper.GetString("path.connectorServer")
+		ManagerAddr = viper.GetString("path.manager_addr")
 		NgxSharedSetUrl = viper.GetString("path.ngx_shared_url")
 		lib.ModifyLevel()
 	})

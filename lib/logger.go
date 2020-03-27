@@ -24,7 +24,7 @@ const (
 
 const (
 	// Label Label
-	Label = "DeepTun"
+	Label = "connector"
 	// Phase Phase
 	Phase = "trans"
 )
@@ -49,23 +49,25 @@ var l zerolog.Logger
 var output zerolog.ConsoleWriter
 
 // InitLogger InitLogger
-func NewLogger(level int, path string) *Logger {
-	path = viper.GetString("log.dirpath")
+func NewLogger(level int) *Logger {
+	path := viper.GetString("log.dirpath")
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// 必须分成两步：先创建文件夹、再修改权限
-			os.MkdirAll(path, 0777) //0777也可以os.ModePerm
-			os.Chmod(path, 0777)
+			os.MkdirAll(path, 777) //0777也可以os.ModePerm
+			os.Chmod(path, 777)
 		} else {
 			panic(err)
 		}
 	}
 
-	filePath := filepath.Join(path, "deepctl.log")
+	filePath := filepath.Join(path, "connector.log")
+	log.Println("filePath:", filePath)
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		log.Println("logger open file err:", err)
+		panic(err)
 	}
 	wr := diode.NewWriter(file, 1000, 0, func(missed int) {
 		fmt.Printf(" %d /n", missed)
