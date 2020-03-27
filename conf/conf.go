@@ -16,6 +16,7 @@ var GatewayCompanyConfigDir string
 var ManagerAddr string
 var ConnectorServer string
 var NgxSharedSetUrl string
+var infoLog lib.InfoLogger
 
 // Config struct
 type Config struct {
@@ -26,6 +27,7 @@ type Config struct {
 // @Param config_path
 // @Return err
 func Init(cfg string) error {
+	infoLog.Println("Init conf")
 	c := Config{
 		Name: cfg,
 	}
