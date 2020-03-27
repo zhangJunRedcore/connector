@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configPath = flag.String("config_path", "/project/deepctl/etc/conf.yaml", "config file path")
+var configPath = flag.String("config_path", "/project/connector/conf/conf.yaml", "config file path")
 
 func init() {
 	log.Println("config_path:", *configPath)
