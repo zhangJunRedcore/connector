@@ -3,7 +3,12 @@ package services
 import (
 	"connector/conf"
 	"connector/lib"
+	"connector/utils"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+
 	"github.com/spf13/viper"
 )
 
@@ -29,6 +34,34 @@ func InitGateway() {
 		return
 	}
 
-	reader := response.Body
-	debugLog.Println("response get body is:", reader)
+	//change body type to []byte
+	bytebody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("read body err, %v\n", err)
+		return
+	}
+	debugLog.Println("json:", string(bytebody))
+
+	//get json body into data
+	var data GatewayData
+	if err = json.Unmarshal(bytebody, &data); err != nil {
+		errorLog.Println("Unmarshal err, %v\n", err)
+		return
+	}
+
+	debugLog.Println("body is:", data)
+	debugLog.Println("body.companyId is:", data.CompanyId)
+
+	dataString, err := utils.Map2String(data.Data)
+	if err != nil {
+		errorLog.Println(err)
+		return
+	}
+
+	err = utils.WriteFile(data.CompanyId, []byte(dataString))
+	if err != nil {
+		errorLog.Println(err)
+		return
+	}
+
 }
