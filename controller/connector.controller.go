@@ -6,7 +6,6 @@ import (
 	"connector/utils"
 	"connector/conf"
 	"net/http"
-
 	"github.com/spf13/viper"
 	"github.com/gin-gonic/gin"
 )
@@ -42,9 +41,23 @@ func GenerateGatewayJSON(ctx *gin.Context) {
 
 	confPath := viper.ConfigFileUsed()
 	yaml := &utils.Yaml{YamlPath: confPath}
+	// modify companyId
 	err = yaml.Modify("company_id", body.CompanyId)
 	if err != nil {
-		errorLog.Println("get clouddeep/shared/set result err !", err)
+		errorLog.Println("modify companyId err !", err)
+		app.Response(200, err.Error(),nil)
+		return
+	}
+	// modify gatewayId
+	if body.Data["gatewayId"] == nil {
+		errorLog.Println("gatewayId is nil")
+		app.Response(200, "gatewayId is nil", nil)
+		return
+	}
+
+	err = yaml.Modify("gateway_id", body.Data["gatewayId"].(string))
+	if err != nil {
+		errorLog.Println("modify gateway err !", err)
 		app.Response(200, err.Error(),nil)
 		return
 	}

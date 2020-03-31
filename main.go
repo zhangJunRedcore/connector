@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configPath = flag.String("config_path", "/project/connector/etc/conf.yaml", "config file path")
-//var configPath = flag.String("config_path", "./conf/conf.yaml", "config file path")
+//ar configPath = flag.String("config_path", "/project/connector/etc/conf.yaml", "config file path")
+var configPath = flag.String("config_path", "./conf/conf.yaml", "config file path")
 
 func init() {
 	log.Println("config_path:", *configPath)
