@@ -39,7 +39,7 @@ func String2Map(data string) (map[string]interface{}, error) {
 
 func WriteFile(companyId string, data []byte) error {
 	file := path.Join(conf.GatewayCompanyConfigDir, companyId+`_gateway.json`)
-	err := ioutil.WriteFile(file, data, 0777)
+	err := ioutil.WriteFile(file, data, 0666)
 	if err != nil {
 		return err
 	}

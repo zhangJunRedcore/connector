@@ -6,7 +6,6 @@ import (
 	"connector/utils"
 	"connector/conf"
 	"net/http"
-	"log"
 	"github.com/spf13/viper"
 	"github.com/gin-gonic/gin"
 )
@@ -50,17 +49,13 @@ func GenerateGatewayJSON(ctx *gin.Context) {
 		return
 	}
 	// modify gatewayId
-	if body.Data["gatewayId"] == nil {
-		errorLog.Println("gatewayId is nil")
-		app.Response(200, "gatewayId is nil", nil)
-		return
-	}
-
-	err = yaml.Modify("gateway_id", body.Data["gatewayId"].(string))
-	if err != nil {
-		errorLog.Println("modify gateway err !", err)
-		app.Response(200, err.Error(),nil)
-		return
+	if body.Data["gatewayId"] != nil {
+		err = yaml.Modify("gateway_id", body.Data["gatewayId"].(string))
+		if err != nil {
+			errorLog.Println("modify gateway err !", err)
+			app.Response(200, err.Error(),nil)
+			return
+		}
 	}
 
 	url := conf.NgxSharedSetUrl + "/" + body.CompanyId

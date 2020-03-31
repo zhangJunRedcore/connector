@@ -64,7 +64,7 @@ func NewLogger(level int) *Logger {
 
 	filePath := filepath.Join(path, "connector.log")
 	log.Println("filePath:", filePath)
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Println("logger open file err:", err)
 		panic(err)

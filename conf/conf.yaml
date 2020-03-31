@@ -10,6 +10,6 @@ log:
 db:
   name: leveldb # db name
 path:
-  jsonpath: /project/openresty/nginx/conf/
+  jsonpath: /project/openresty/nginx/conf/conf_gateway
   ngx_shared_url: http://127.0.0.1/clouddeep/shared/set
   manager_addr: http://127.0.0.1
