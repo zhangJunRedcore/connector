@@ -23,3 +23,8 @@ func (g *Gin) Response(errCode int, msg string, data interface{}) {
 	})
 	return
 }
+
+func (g *Gin) StatusInternalServerError() {
+	g.Ctx.JSON(500, Response{})
+	return
+}

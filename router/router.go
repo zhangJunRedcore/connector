@@ -12,5 +12,6 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Recovery())
 	//Get gatewaymassage from manager and generate gateway.json at the same time
 	r.POST("/gateway/data", controller.GenerateGatewayJSON)
+	r.GET("/nginx_status", controller.GetNginxStatus)
 	return r
 }

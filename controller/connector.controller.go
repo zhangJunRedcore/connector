@@ -6,6 +6,7 @@ import (
 	"connector/utils"
 	"connector/conf"
 	"net/http"
+	"log"
 	"github.com/spf13/viper"
 	"github.com/gin-gonic/gin"
 )
@@ -67,6 +68,22 @@ func GenerateGatewayJSON(ctx *gin.Context) {
 	if err != nil || response.StatusCode != http.StatusOK {
 		errorLog.Println("get clouddeep/shared/set result err !", err)
 		app.Response(200, err.Error(),nil)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "ok",
+	})
+}
+
+func GetNginxStatus(ctx *gin.Context) {
+	app := services.Gin{Ctx: ctx}
+
+	url := "http://127.0.0.1/nginx_status"
+	response, err := http.Get(url)
+	log.Println("response:", response, "err:",err)
+	if err != nil || response.StatusCode != http.StatusOK {
+		app.StatusInternalServerError()
 		return
 	}
 
