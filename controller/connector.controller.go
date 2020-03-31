@@ -81,7 +81,6 @@ func GetNginxStatus(ctx *gin.Context) {
 
 	url := "http://127.0.0.1/nginx_status"
 	response, err := http.Get(url)
-	log.Println("response:", response, "err:",err)
 	if err != nil || response.StatusCode != http.StatusOK {
 		app.StatusInternalServerError()
 		return
